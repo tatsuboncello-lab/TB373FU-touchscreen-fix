@@ -190,6 +190,12 @@ and reproduction.
 
 ---
 
+## Follow-up — October 8, 2026
+
+**No recurrence as of October 8, 2026.** The owner confirms that the intermittent finger-touch failure has not occurred even once since the ReK experiments and subsequent diagnostic-mode transitions in September 2026, despite continued regular use. This extends the original approximately two-week observation. The exact action responsible for the sustained improvement remains unknown; this is not yet proof of a permanent or generally reproducible fix.
+
+---
+
 ## Current Status
 
 **Immediate ReK recovery:** reproduced twice
@@ -379,6 +385,12 @@ TB373FU / Idea Tab Pro / Xiaoxin Pad Pro 2025で、似たようなタッチス�
 ここに記載したコマンドは、**他の端末でそのまま実行するための手順ではなく、技術的な調査記録として掲載しています。**
 
 誤ったカーネルインターフェース操作やドライバ変更は、端末の不安定化などを引き起こす可能性があります。
+
+---
+
+## 追記（2026年10月8日）
+
+**2026年10月8日現在も再発ゼロです。** 2026年9月のReK実験およびその後の診断モード切り替え以降、通常どおり使用を続けていますが、指タッチ不良は一度も発生していません。README初版の「約2週間再発なし」という観察期間から、さらに継続していることを確認しました。ただし、どの操作が長期的な改善につながったかは未確定であり、恒久修正や他の端末での再現性が証明されたわけではありません。
 
 ---
 
