@@ -190,6 +190,122 @@ and reproduction.
 
 ---
 
+## Experimental reproduction procedure (self-responsibility)
+
+The following procedure documents the exact ReK test environment used in this investigation. It is **not a stock-firmware procedure** and should only be attempted by someone who understands bootloader unlocking, fastboot, Magisk/root, and vendor/kernel image flashing.
+
+### 1. Required environment
+
+Confirmed test environment:
+
+- Physical hardware: TB375FC (China-market Xiaoxin Pad Pro 12.7 2025)
+- Software identity: TB373FU ROW / GL057
+- Android 16 / ZUI 17.5.10.057
+- Bootloader unlocked
+- Magisk root
+- Active slot: A
+- ReK-modified `nt36532` module loaded
+- ReK test `vendor_boot`: `vendor_boot_GL057_REK_SHELL_V3.img`
+- SHA-256: `cbba2580cc126b6bcb33f1d5b45f42b39c3df8e180556934a9195e66ebd636b2`
+- Modified `nt36532` module SHA-256: `fc9fd4cdb5d97e0ac63f147222283cf29bed44d59e5f9a90cd72355eb206679c`
+- Modified module Build ID: `dc4d10ccede4f70d41af047c69a2c22aaa9be9cd`
+
+### 2. Install the experimental ReK vendor_boot
+
+On the confirmed GL057 / slot-A setup:
+
+```bat
+fastboot flash vendor_boot_a vendor_boot_GL057_REK_SHELL_V3.img
+```
+
+A successful flash was observed as:
+
+```text
+Sending 'vendor_boot_a' (65536 KB) OKAY
+Writing 'vendor_boot_a' OKAY
+Finished
+```
+
+Do **not** assume this image is suitable for other Lenovo models, firmware versions, hardware revisions, or slots.
+
+### 3. Verify the ReK entry
+
+After Android boots and root is available:
+
+```bat
+adb shell "su -c 'cat /proc/game_mode'"
+```
+
+On the test device this returned:
+
+```text
+0
+```
+
+The modified driver maps `game_mode=2` to the NT36532 Force Calibration / ReK command `0x23 0x00`.
+
+### 4. Test only while the touchscreen is actually BAD
+
+When the intermittent touch failure is occurring, first confirm that the touchscreen is still in the bad state.
+
+Then run:
+
+```bat
+adb shell "su -c 'echo 2 > /proc/game_mode'"
+```
+
+On this device, ReK immediately restored touch operation without turning the display off/on. This was reproduced **2/2 times**.
+
+### 5. Optional diagnostic-mode observation
+
+The diagnostic proc nodes include:
+
+```text
+/proc/nvt_baseline
+/proc/nvt_raw
+/proc/nvt_diff
+```
+
+Reading these is **not necessarily read-only internally**. The recorded behavior is approximately:
+
+```text
+FW status clear
+    ↓
+TEST_MODE_2 (0x22)
+    ↓
+data acquisition
+    ↓
+NORMAL_MODE (0x00)
+    ↓
+HOST_READY (0xBB)
+```
+
+Because these operations may change controller state, they should not be treated as an innocent diagnostic read.
+
+For future BAD-state investigation, the recorded order was:
+
+1. Save `/proc/game_mode` and recent dmesg.
+2. Read `/proc/nvt_baseline` once.
+3. Test touch immediately.
+4. If it does not recover, test ReK.
+5. Do not read baseline/raw/diff repeatedly before determining whether the first baseline read itself changed the state.
+
+### 6. Return to stock vendor_boot
+
+If the experimental ReK environment needs to be removed, restore the matching GL057 stock `vendor_boot.img` to the same partition:
+
+```bat
+fastboot flash vendor_boot_a "<GL057 stock vendor_boot.img>"
+```
+
+The stock image used in the investigation came from the matching GL057 package.
+
+**Do not relock the bootloader. Do not flash these images to slot B.**
+
+This procedure documents what was actually done on the test device; it does **not** establish that ReK is a permanent fix or that the same procedure is safe/effective on another device.
+
+---
+
 ## Follow-up — October 8, 2026
 
 **No recurrence as of October 8, 2026.** The owner confirms that the intermittent finger-touch failure has not occurred even once since the ReK experiments and subsequent diagnostic-mode transitions in September 2026, despite continued regular use. This extends the original approximately two-week observation. The exact action responsible for the sustained improvement remains unknown; this is not yet proof of a permanent or generally reproducible fix.
@@ -385,6 +501,128 @@ TB373FU / Idea Tab Pro / Xiaoxin Pad Pro 2025で、似たようなタッチス�
 ここに記載したコマンドは、**他の端末でそのまま実行するための手順ではなく、技術的な調査記録として掲載しています。**
 
 誤ったカーネルインターフェース操作やドライバ変更は、端末の不安定化などを引き起こす可能性があります。
+
+---
+
+## 実験手順（自己責任・上級者向け）
+
+以下は、今回のReK検証で**実際に使用した環境と操作を記録したもの**です。純正ファームウェアでそのまま実行する手順ではありません。Bootloader Unlock、fastboot、Magisk/root、vendor_bootの書き換えについて理解している人向けです。
+
+### 1. 検証環境
+
+確認済みの環境：
+
+- 物理ハード：TB375FC（中国版 Xiaoxin Pad Pro 12.7 2025）
+- ソフトウェア：TB373FU ROW / GL057
+- Android 16 / ZUI 17.5.10.057
+- Bootloader：Unlocked
+- Magisk root：有効
+- 使用slot：A
+- ReK改造版 `nt36532` モジュール：ロード済み
+- ReK検証用 `vendor_boot`：`vendor_boot_GL057_REK_SHELL_V3.img`
+- SHA-256：`cbba2580cc126b6bcb33f1d5b45f42b39c3df8e180556934a9195e66ebd636b2`
+- 改造版 `nt36532` モジュール SHA-256：`fc9fd4cdb5d97e0ac63f147222283cf29bed44d59e5f9a90cd72355eb206679c`
+- 改造版モジュール Build ID：`dc4d10ccede4f70d41af047c69a2c22aaa9be9cd`
+
+### 2. 実験用ReK vendor_bootを導入
+
+上記のGL057 / slot A環境で、実際に使用したflashコマンド：
+
+```bat
+fastboot flash vendor_boot_a vendor_boot_GL057_REK_SHELL_V3.img
+```
+
+実機では以下の成功ログを確認：
+
+```text
+Sending 'vendor_boot_a' (65536 KB) OKAY
+Writing 'vendor_boot_a' OKAY
+Finished
+```
+
+このイメージが他のLenovo機種、別のファームウェア、別ハードウェアリビジョン、slot Bで安全に使えることは確認されていません。
+
+### 3. ReK入口を確認
+
+Android起動後、rootが使える状態で：
+
+```bat
+adb shell "su -c 'cat /proc/game_mode'"
+```
+
+検証端末では：
+
+```text
+0
+```
+
+と表示されました。
+
+この改造版ドライバでは、`game_mode=2` がNT36532のForce Calibration / ReK相当の `0x23 0x00` を送るようになっています。
+
+### 4. タッチ不良が実際に発生している状態で実行
+
+タッチ不良が発生していることを確認したうえで：
+
+```bat
+adb shell "su -c 'echo 2 > /proc/game_mode'"
+```
+
+を実行します。
+
+この端末では、画面OFF→ONを行わなくても直後にタッチ操作が復旧しました。
+
+この復旧は**2回中2回**確認しています。
+
+### 5. 診断モードについて
+
+確認されている診断proc：
+
+```text
+/proc/nvt_baseline
+/proc/nvt_raw
+/proc/nvt_diff
+```
+
+これらは**単純な読み取り専用とは限りません**。記録上は概ね：
+
+```text
+FW status clear
+    ↓
+TEST_MODE_2 (0x22)
+    ↓
+データ取得
+    ↓
+NORMAL_MODE (0x00)
+    ↓
+HOST_READY (0xBB)
+```
+
+という遷移を行います。
+
+そのため、診断データを読むだけでもタッチコントローラの内部状態が変化する可能性があります。
+
+今後BAD状態が再発した場合の切り分け手順として記録しているのは：
+
+1. `/proc/game_mode` と直近のdmesgを保存する。
+2. `/proc/nvt_baseline` を1回だけ読む。
+3. 直後にタッチを確認する。
+4. 直らなければReKを試す。
+5. baseline/raw/diffを最初から全部読むのではなく、baselineを1回読んだだけで復旧したかを確認する。
+
+### 6. 純正vendor_bootへ戻す
+
+ReK実験環境を解除する場合は、対応するGL057純正 `vendor_boot.img` を同じパーティションへ戻します。
+
+```bat
+fastboot flash vendor_boot_a "<GL057純正 vendor_boot.img>"
+```
+
+使用した純正イメージは、対応するGL057パッケージ内のものです。
+
+**Bootloaderは再ロックしないでください。slot Bには書き込まないでください。**
+
+ここに記載したのは、あくまで今回の実機で実際に行った操作です。ReKが恒久修正であることも、他の端末で同じ手順が安全・有効であることも、まだ証明されていません。
 
 ---
 
