@@ -190,6 +190,20 @@ and reproduction.
 
 ---
 
+## Experimental modified driver binary
+
+The exact modified Novatek `nt36532` kernel module used in the ReK experiment is included in this repository:
+
+- [Download `nt36532_rek_test.ko`](./nt36532_rek_test.ko)
+- SHA-256: `fc9fd4cdb5d97e0ac63f147222283cf29bed44d59e5f9a90cd72355eb206679c`
+- Build ID: `dc4d10ccede4f70d41af047c69a2c22aaa9be9cd`
+
+This binary is the experimental modified driver used on the confirmed TB375FC hardware running TB373FU ROW / GL057 (ZUI 17.5.10.057). It is provided for reproducibility and technical investigation only.
+
+**Do not load this module on stock firmware or on another device without understanding the kernel/driver compatibility and the risks involved.** The repository does not establish that this binary is safe or effective on other hardware, firmware versions, or kernel builds.
+
+---
+
 ## Experimental reproduction procedure (self-responsibility)
 
 The following procedure documents the exact ReK test environment used in this investigation. It is **not a stock-firmware procedure** and should only be attempted by someone who understands bootloader unlocking, fastboot, Magisk/root, and vendor/kernel image flashing.
